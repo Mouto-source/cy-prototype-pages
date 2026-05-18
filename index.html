@@ -193,8 +193,8 @@
             <th style="width:160px;"><span class="req">*</span> 制度名称</th>
             <th style="width:180px;"><span class="req">*</span> 摘要</th>
             <th style="width:130px;"><span class="req">*</span> 发文日期</th>
-            <th style="width:130px;"><span class="req">*</span> 过期时间 <span class="badge badge-auto">自动</span></th>
-            <th style="width:160px;" id="th-num"><span class="req">*</span> 序号</th>
+            <th style="width:130px;"><span class="req">*</span> 重检日期 <span class="badge badge-auto">自动</span></th>
+            <th style="width:160px;" id="th-num"><span class="req">*</span> 制度序号</th>
             <th style="width:60px;">操作</th>
           </tr>
         </thead>
@@ -248,13 +248,13 @@
   <h4>📝 流程与字段决策（v3）</h4>
   <ul>
     <li>✅ <b>两步式</b>：Step 1 填批量公共信息（与你截图一致）→ 点"下一步"才弹 Step 2 逐条确认</li>
-    <li>✅ <b>字段名已按 v2 收集表对齐</b>：「重检时间」→「<b>过期时间</b>」、「制度序号」→「<b>序号</b>」、「分类」→「制度分类」</li>
-    <li>✅ <b>弹窗 6 个真正 per-row 的字段</b>：标题 / 制度名称 / 摘要 / 发文日期 / 过期时间（自动）/ 制度文号或序号</li>
+    <li>✅ <b>字段名最终决策（2026-05-18 用户确认）</b>：「过期时间/重检时间」→「<b>重检日期</b>」、v2「序号」→「<b>制度序号</b>」、「分类」→「制度分类」</li>
+    <li>✅ <b>弹窗 6 个真正 per-row 的字段</b>：标题 / 制度名称 / 摘要 / 发文日期 / 重检日期（自动）/ 制度文号或制度序号</li>
     <li class="strike">❌ 不重复展示：生效日期、所属部门、制度所属、年份、银行制度层级、管理员、内部作者、上承制度、关键字、国内制度层级（这些 Step 1 已设定，作为本批默认值）</li>
     <li class="strike">❌ 不加分类（文件夹层级已自动匹配）</li>
     <li class="strike">❌ 不加密级 / 摘要 / 简称（导入后逐条编辑即可）</li>
     <li class="strike">❌ 不加是否试行（业务确认不做）</li>
-    <li>🔄 文号 / 序号合并为一列：根据 Step 1 选的"制度所属 = 香港 / 内地"自动决定 placeholder 文案与必填规则</li>
+    <li>🔄 制度文号 / 制度序号 合并为一列：根据 Step 1 选的"制度所属 = 香港 / 内地"自动决定列名与必填规则</li>
     <li>🔄 发文日期改变 → 重检时间自动 = 发文 + 1 年；手动改过则联动暂停（橙色边框标识）</li>
     <li>🔄 个别行需要单独调整 Step 1 的公共字段（如本行生效日期不同）→ 用"正文"按钮打开侧栏单独覆盖；保持弹窗清爽</li>
   </ul>
@@ -276,7 +276,7 @@
 
     // ── Step 2 弹窗：编号列字段名切换 ──
     thNum.innerHTML = isHK
-      ? '<span style="color:#ef4444;margin-right:2px;">*</span> 序号 <span class="badge badge-hk">香港</span>'
+      ? '<span style="color:#ef4444;margin-right:2px;">*</span> 制度序号 <span class="badge badge-hk">香港</span>'
       : '<span style="color:#ef4444;margin-right:2px;">*</span> 制度文号 <span class="badge badge-cn">内地</span>';
     regionTag.textContent = isHK ? '香港' : '内地分行';
     regionTag.className = isHK ? 'badge badge-hk' : 'badge badge-cn';
@@ -324,12 +324,12 @@
     closeModal();
   });
 
-  // 发文日期 → 自动联动过期时间 (+1 年)
+  // 发文日期 → 自动联动重检日期 (+1 年)
   document.querySelectorAll('table.grid tbody tr').forEach(tr => {
     const dates = tr.querySelectorAll('input[type="date"]');
     if (dates.length >= 2) {
       const fa = dates[0]; // 发文日期
-      const ex = dates[1]; // 过期时间
+      const ex = dates[1]; // 重检日期
       fa.addEventListener('change', () => {
         if (ex.classList.contains('overridden')) return;
         if (!fa.value) return;
