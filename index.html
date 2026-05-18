@@ -36,6 +36,8 @@
   .control input, .control select { width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px; background: #fff; }
   .tag { display: inline-flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #d1d5db; padding: 4px 8px; border-radius: 3px; font-size: 13px; }
   .tag .x { cursor: pointer; opacity: 0.5; margin-left: 4px; }
+  .tag-user { background: #eff6ff; border-color: #93c5fd; color: #1e40af; }
+  .tag-dept { background: #ecfdf5; border-color: #6ee7b7; color: #065f46; }
 
   .btn { padding: 8px 18px; border-radius: 4px; border: 1px solid #d1d5db; background: #fff; color: #4b5563; font-size: 14px; cursor: pointer; }
   .btn-primary { background: #f0853f; color: #fff; border: none; }
@@ -132,8 +134,13 @@
     <div class="row">
       <div class="label"><span class="req">*</span> 所属年份</div>
       <div class="control"><input value="2026" /></div>
-      <div class="label">内部作者/团队</div>
-      <div class="control"><div class="tag">EHR系统创兴银行项目组 <span class="x">×</span></div></div>
+      <div class="label"><span class="req">*</span> 内部作者/团队</div>
+      <div class="control" style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;">
+        <span class="tag tag-user" title="用户">👤 张三 <span class="x">×</span></span>
+        <span class="tag tag-dept" title="部门">🏢 ZRMD <span class="x">×</span></span>
+        <span class="tag tag-dept" title="部门">🏢 EHR项目组 <span class="x">×</span></span>
+        <input style="border:none;outline:none;flex:1;min-width:120px;padding:4px;" placeholder="搜索用户或部门…" />
+      </div>
       <div class="label">上承制度/文件</div>
       <div class="control"><input placeholder="多个使用 , 分隔。" /></div>
     </div>
@@ -255,6 +262,7 @@
     <li class="strike">❌ 不加密级 / 摘要 / 简称（导入后逐条编辑即可）</li>
     <li class="strike">❌ 不加是否试行（业务确认不做）</li>
     <li>🔄 制度文号 / 制度序号 合并为一列：根据 Step 1 选的"制度所属 = 香港 / 内地"自动决定列名与必填规则</li>
+    <li>🆕 <b>「内部作者/团队」字段</b>支持<b>用户 + 部门</b>混合多选（👤 蓝色标签 = 用户、🏢 绿色标签 = 部门，可同时存在）</li>
     <li>🔄 发文日期改变 → 重检时间自动 = 发文 + 1 年；手动改过则联动暂停（橙色边框标识）</li>
     <li>🔄 个别行需要单独调整 Step 1 的公共字段（如本行生效日期不同）→ 用"正文"按钮打开侧栏单独覆盖；保持弹窗清爽</li>
   </ul>
