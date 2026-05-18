@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>批量导入 · 两步式 · 原型 v3</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #f4f5f7; color: #1f2937; }
+
+  .container { max-width: 1180px; margin: 0 auto; padding: 24px; }
+
+  /* steps */
+  .steps { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+  .step { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #6b7280; }
+  .step .num { width: 26px; height: 26px; border-radius: 50%; background: #e5e7eb; color: #6b7280; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; }
+  .step.active { color: #1f2937; font-weight: 500; }
+  .step.active .num { background: #f0853f; color: #fff; }
+  .step.done .num { background: #10b981; color: #fff; }
+  .step-line { flex: 0 0 60px; height: 1px; background: #d1d5db; }
+
+  .card { background: #fff; border-radius: 8px; border: 1px solid #e5e7eb; padding: 20px 24px; margin-bottom: 16px; }
+  .card-title { margin: 0 0 14px 0; font-size: 15px; font-weight: 600; }
+
+  .tip { background: #fef9eb; border: 1px solid #fde68a; color: #92400e; padding: 9px 14px; border-radius: 4px; font-size: 13px; margin-bottom: 12px; }
+  .tip-orange { color: #b45309; font-size: 13px; margin-bottom: 12px; }
+
+  .zip-item { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 4px; }
+  .zip-icon { width: 28px; height: 28px; border-radius: 4px; background: #ddd6fe; color: #5b21b6; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
+  .zip-close { margin-left: auto; color: #ef4444; cursor: pointer; font-size: 18px; }
+
+  /* form grid matching screenshot layout */
+  .row { display: grid; grid-template-columns: 110px 1fr 110px 1fr 110px 1fr; gap: 16px; align-items: center; margin-bottom: 14px; }
+  .row-full { display: grid; grid-template-columns: 110px 1fr; gap: 16px; align-items: center; margin-bottom: 14px; }
+  .label { font-size: 13px; color: #4b5563; text-align: right; }
+  .label .req { color: #ef4444; margin-right: 2px; }
+  .control input, .control select { width: 100%; padding: 8px 10px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 14px; background: #fff; }
+  .tag { display: inline-flex; align-items: center; gap: 4px; background: #fff; border: 1px solid #d1d5db; padding: 4px 8px; border-radius: 3px; font-size: 13px; }
+  .tag .x { cursor: pointer; opacity: 0.5; margin-left: 4px; }
+
+  .btn { padding: 8px 18px; border-radius: 4px; border: 1px solid #d1d5db; background: #fff; color: #4b5563; font-size: 14px; cursor: pointer; }
+  .btn-primary { background: #f0853f; color: #fff; border: none; }
+  .btn-primary:hover { background: #e36a1e; }
+  .btn-text { color: #f0853f; background: none; border: none; cursor: pointer; padding: 0; font-size: 13px; }
+
+  .footer { background: #fff; border-top: 1px solid #e5e7eb; padding: 14px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; bottom: 0; margin-top: 16px; }
+
+  /* ───── modal ───── */
+  .mask { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex; align-items: flex-start; justify-content: center; padding-top: 8vh; z-index: 100; }
+  .modal { background: #fff; border-radius: 10px; width: min(880px, 95vw); max-height: 80vh; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,.2); }
+  .modal-header { padding: 16px 24px; border-bottom: 1px solid #eef0f3; display: flex; align-items: center; justify-content: space-between; }
+  .modal-header h2 { margin: 0; font-size: 16px; font-weight: 600; }
+  .modal-header .close { color: #9ca3af; cursor: pointer; font-size: 20px; }
+
+  .modal-body { padding: 14px 20px 16px; overflow: auto; flex: 1; }
+
+  .alert { background: #f0f7ff; border: 1px solid #bfdbfe; color: #1e40af; padding: 8px 12px; border-radius: 4px; font-size: 12px; margin-bottom: 12px; line-height: 1.5; }
+  .alert b { color: #1e3a8a; }
+
+  .legend { font-size: 11px; color: #6b7280; margin-bottom: 8px; }
+  .legend span { margin-right: 14px; }
+  .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: -1px; }
+
+  table.grid { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 13px; }
+  table.grid th, table.grid td { padding: 10px 8px; text-align: left; vertical-align: middle; border-bottom: 1px solid #f3f4f6; }
+  table.grid thead th { background: #fafafa; font-weight: 600; font-size: 12px; color: #4b5563; border-bottom: 1px solid #e5e7eb; }
+  table.grid thead th .req { color: #ef4444; margin-right: 2px; }
+  table.grid input { width: 100%; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; background: #fff; }
+  table.grid input:disabled { background: #f9fafb; color: #9ca3af; }
+  table.grid input.auto { background: #f9fafb; color: #4b5563; }
+  table.grid input.overridden { border-color: #f0853f; background: #fff7ed; }
+
+  .badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 500; margin-left: 4px; }
+  .badge-hk { background: #fef3c7; color: #92400e; }
+  .badge-cn { background: #dbeafe; color: #1e40af; }
+  .badge-auto { background: #ecfdf5; color: #065f46; }
+
+  .modal-footer { padding: 12px 24px; border-top: 1px solid #eef0f3; display: flex; justify-content: space-between; align-items: center; background: #fafafa; }
+  .modal-footer .status { font-size: 13px; color: #4b5563; }
+
+  .note { margin-top: 24px; padding: 14px 18px; background: #fff; border-radius: 8px; max-width: 1180px; font-size: 13px; color: #4b5563; }
+  .note h4 { margin: 0 0 8px 0; font-size: 14px; color: #111; }
+  .note ul { margin: 4px 0; padding-left: 22px; }
+  .note li { margin: 5px 0; }
+  .strike { text-decoration: line-through; color: #9ca3af; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- step indicator -->
+  <div class="steps">
+    <div class="step active" id="step1"><div class="num">1</div>填写批量公共信息</div>
+    <div class="step-line"></div>
+    <div class="step" id="step2"><div class="num">2</div>逐条确认录入信息</div>
+    <div class="step-line"></div>
+    <div class="step" id="step3"><div class="num">3</div>添加权限</div>
+  </div>
+
+  <!-- ZIP 批量上传 -->
+  <div class="card">
+    <h3 class="card-title">ZIP 批量上传</h3>
+    <div class="tip">
+      <span style="color:#b45309;">⚠️ 提示 [1]</span>：每次批量上传必须是同一个部门的制度；
+      <span style="color:#b45309;">提示 [2]</span>：内网速度为 1m/s，若上传 1G 压缩包，所需时间预计为 20 分钟。
+    </div>
+    <div class="zip-item">
+      <div class="zip-icon">ZIP</div>
+      <div>制度汇编.zip <span style="color:#9ca3af; font-size:12px;">3 个制度 · 12.4 MB</span></div>
+      <div class="zip-close">×</div>
+    </div>
+  </div>
+
+  <!-- 批量编辑信息 -->
+  <div class="card">
+    <h3 class="card-title">批量编辑信息</h3>
+    <div class="tip-orange">* 批量上传将根据制度内容自动填写标题、文号、所属年份。</div>
+
+    <div class="row-full"><div class="label"><span class="req">*</span> 本制度管理员</div>
+      <div class="control"><div class="tag">莫明川 <span class="x">×</span></div></div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="req">*</span> 制度所属</div>
+      <div class="control"><select id="region-select"><option value="hk">香港</option><option value="cn">内地分行</option></select></div>
+      <div class="label"><span class="req">*</span> 所属部门</div>
+      <div class="control"><div class="tag">/越秀集团/集团总部/广州越秀企业集团... <span class="x">×</span></div></div>
+      <div class="label"><span class="req">*</span> 生效日期</div>
+      <div class="control"><input value="2026-05-18 00:00:00" /></div>
+    </div>
+
+    <div class="row">
+      <div class="label"><span class="req">*</span> 所属年份</div>
+      <div class="control"><input value="2026" /></div>
+      <div class="label">内部作者/团队</div>
+      <div class="control"><div class="tag">EHR系统创兴银行项目组 <span class="x">×</span></div></div>
+      <div class="label">上承制度/文件</div>
+      <div class="control"><input placeholder="多个使用 , 分隔。" /></div>
+    </div>
+
+    <div class="row-full">
+      <div class="label">关键字</div>
+      <div class="control"><input placeholder="请输入关键字" /></div>
+    </div>
+
+    <div class="row-full">
+      <div class="label"><span class="req">*</span> 银行制度层级</div>
+      <div class="control"><select><option>一级</option><option>二级</option><option>三级</option></select></div>
+    </div>
+
+    <div class="row-full">
+      <div class="label" id="label-cn-level"><span class="req" id="req-cn-level" style="visibility:hidden;">*</span> 国内制度层级</div>
+      <div class="control"><select id="cn-level-select" disabled><option value="">内地分行必填，香港非必填</option><option>一级</option><option>二级</option><option>三级</option></select></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="footer">
+  <div></div>
+  <div>
+    <button class="btn">返回</button>
+    <button class="btn">批量存为草稿</button>
+    <button class="btn btn-primary" id="btn-next">下一步：确认录入信息 →</button>
+  </div>
+</div>
+
+
+<!-- ═════════════ Step 2 弹窗（点击"下一步"后才弹出） ═════════════ -->
+<div class="mask" id="modal-mask" style="display:none;">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>确认制度录入信息 <span style="font-size:12px;font-weight:400;color:#9ca3af;margin-left:8px;">Step 2 / 3</span></h2>
+      <span class="close" id="btn-close">×</span>
+    </div>
+
+    <div class="modal-body">
+
+      <div class="alert">
+        本批次 = <span id="region-tag" class="badge badge-hk">香港</span>（由 Step 1 设定）。以下字段为<b>每篇制度单独</b>需要确认的内容，其他公共字段已在 Step 1 填入。
+      </div>
+
+      <div class="legend">
+        <span><span class="dot" style="background:#f9fafb;border:1px solid #d1d5db;"></span>系统自动</span>
+        <span><span class="dot" style="background:#fff7ed;border:1px solid #f0853f;"></span>手动覆盖</span>
+      </div>
+
+      <table class="grid">
+        <thead>
+          <tr>
+            <th style="width:32px;">#</th>
+            <th style="width:220px;"><span class="req">*</span> 标题</th>
+            <th style="width:160px;"><span class="req">*</span> 制度名称</th>
+            <th style="width:180px;"><span class="req">*</span> 摘要</th>
+            <th style="width:130px;"><span class="req">*</span> 发文日期</th>
+            <th style="width:130px;"><span class="req">*</span> 过期时间 <span class="badge badge-auto">自动</span></th>
+            <th style="width:160px;" id="th-num"><span class="req">*</span> 序号</th>
+            <th style="width:60px;">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td style="color:#9ca3af;">1</td>
+            <td><input value="智能纪要：4 月 23 日 知识周例会" /></td>
+            <td><input value="知识周例会纪要-20260423" /></td>
+            <td><input placeholder="二期 AI 自动生成…" /></td>
+            <td><input type="date" value="2026-04-23" /></td>
+            <td><input type="date" value="2027-04-23" class="auto" title="自动 = 发文 + 1 年" /></td>
+            <td><input class="num-input" data-hk="ZRMD-1-MIN-001" data-cn="广越集团字〔2026〕101号" value="ZRMD-1-MIN-001" /></td>
+            <td><button class="btn-text">正文</button></td>
+          </tr>
+          <tr>
+            <td style="color:#9ca3af;">2</td>
+            <td><input value="2026 年 5 月 制度评审纪要" /></td>
+            <td><input value="制度评审纪要-202605" /></td>
+            <td><input value="本月制度评审会议要点…" /></td>
+            <td><input type="date" value="2026-05-10" /></td>
+            <td><input type="date" value="2027-05-10" class="auto" /></td>
+            <td><input class="num-input" data-hk="ZRMD-1-MIN-002" data-cn="广越集团字〔2026〕102号" value="ZRMD-1-MIN-002" /></td>
+            <td><button class="btn-text">正文</button></td>
+          </tr>
+          <tr>
+            <td style="color:#9ca3af;">3</td>
+            <td><input value="制度汇编系统培训手册" /></td>
+            <td><input value="制度汇编培训手册" /></td>
+            <td><input value="新员工制度汇编系统使用培训…" /></td>
+            <td><input type="date" value="2026-03-15" /></td>
+            <td><input type="date" value="2028-03-15" class="overridden" title="手动改为 2 年周期" /></td>
+            <td><input class="num-input" data-hk="ZRMD-1-TRAIN-003" data-cn="广越集团字〔2026〕103号" value="ZRMD-1-TRAIN-003" /></td>
+            <td><button class="btn-text">正文</button></td>
+          </tr>
+        </tbody>
+      </table>
+
+    </div>
+
+    <div class="modal-footer">
+      <div class="status">共 <b>3</b> 条，全部必填字段已填</div>
+      <div>
+        <button class="btn" id="btn-back">返回上一步</button>
+        <button class="btn btn-primary" id="btn-confirm">确认导入 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="note">
+  <h4>📝 流程与字段决策（v3）</h4>
+  <ul>
+    <li>✅ <b>两步式</b>：Step 1 填批量公共信息（与你截图一致）→ 点"下一步"才弹 Step 2 逐条确认</li>
+    <li>✅ <b>字段名已按 v2 收集表对齐</b>：「重检时间」→「<b>过期时间</b>」、「制度序号」→「<b>序号</b>」、「分类」→「制度分类」</li>
+    <li>✅ <b>弹窗 6 个真正 per-row 的字段</b>：标题 / 制度名称 / 摘要 / 发文日期 / 过期时间（自动）/ 制度文号或序号</li>
+    <li class="strike">❌ 不重复展示：生效日期、所属部门、制度所属、年份、银行制度层级、管理员、内部作者、上承制度、关键字、国内制度层级（这些 Step 1 已设定，作为本批默认值）</li>
+    <li class="strike">❌ 不加分类（文件夹层级已自动匹配）</li>
+    <li class="strike">❌ 不加密级 / 摘要 / 简称（导入后逐条编辑即可）</li>
+    <li class="strike">❌ 不加是否试行（业务确认不做）</li>
+    <li>🔄 文号 / 序号合并为一列：根据 Step 1 选的"制度所属 = 香港 / 内地"自动决定 placeholder 文案与必填规则</li>
+    <li>🔄 发文日期改变 → 重检时间自动 = 发文 + 1 年；手动改过则联动暂停（橙色边框标识）</li>
+    <li>🔄 个别行需要单独调整 Step 1 的公共字段（如本行生效日期不同）→ 用"正文"按钮打开侧栏单独覆盖；保持弹窗清爽</li>
+  </ul>
+</div>
+
+<script>
+  const mask = document.getElementById('modal-mask');
+  const step1 = document.getElementById('step1');
+  const step2 = document.getElementById('step2');
+  const regionSelect = document.getElementById('region-select');
+  const regionTag = document.getElementById('region-tag');
+  const thNum = document.getElementById('th-num');
+
+  const cnLevelSelect = document.getElementById('cn-level-select');
+  const reqCnLevel = document.getElementById('req-cn-level');
+
+  function syncRegion() {
+    const isHK = regionSelect.value === 'hk';
+
+    // ── Step 2 弹窗：编号列字段名切换 ──
+    thNum.innerHTML = isHK
+      ? '<span style="color:#ef4444;margin-right:2px;">*</span> 序号 <span class="badge badge-hk">香港</span>'
+      : '<span style="color:#ef4444;margin-right:2px;">*</span> 制度文号 <span class="badge badge-cn">内地</span>';
+    regionTag.textContent = isHK ? '香港' : '内地分行';
+    regionTag.className = isHK ? 'badge badge-hk' : 'badge badge-cn';
+    document.querySelectorAll('.num-input').forEach(inp => {
+      inp.value = isHK ? inp.dataset.hk : inp.dataset.cn;
+    });
+
+    // ── Step 1 表单：国内制度层级 必填 / 可填切换 ──
+    if (isHK) {
+      cnLevelSelect.disabled = true;
+      cnLevelSelect.value = '';
+      cnLevelSelect.options[0].textContent = '内地分行必填，香港非必填';
+      reqCnLevel.style.visibility = 'hidden';
+    } else {
+      cnLevelSelect.disabled = false;
+      cnLevelSelect.options[0].textContent = '请选择';
+      reqCnLevel.style.visibility = 'visible';
+    }
+  }
+  regionSelect.addEventListener('change', syncRegion);
+  syncRegion();
+
+  function openModal() {
+    mask.style.display = 'flex';
+    step1.classList.remove('active');
+    step1.classList.add('done');
+    step2.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    mask.style.display = 'none';
+    step2.classList.remove('active');
+    step1.classList.remove('done');
+    step1.classList.add('active');
+    document.body.style.overflow = '';
+  }
+
+  document.getElementById('btn-next').addEventListener('click', openModal);
+  document.getElementById('btn-back').addEventListener('click', closeModal);
+  document.getElementById('btn-close').addEventListener('click', closeModal);
+  mask.addEventListener('click', (e) => { if (e.target === mask) closeModal(); });
+
+  document.getElementById('btn-confirm').addEventListener('click', () => {
+    alert('✅ 已确认导入 3 条制度。\n（演示原型，未对接接口）');
+    closeModal();
+  });
+
+  // 发文日期 → 自动联动过期时间 (+1 年)
+  document.querySelectorAll('table.grid tbody tr').forEach(tr => {
+    const dates = tr.querySelectorAll('input[type="date"]');
+    if (dates.length >= 2) {
+      const fa = dates[0]; // 发文日期
+      const ex = dates[1]; // 过期时间
+      fa.addEventListener('change', () => {
+        if (ex.classList.contains('overridden')) return;
+        if (!fa.value) return;
+        const d = new Date(fa.value);
+        d.setFullYear(d.getFullYear() + 1);
+        ex.value = d.toISOString().slice(0, 10);
+      });
+      ex.addEventListener('change', () => {
+        ex.classList.add('overridden');
+        ex.classList.remove('auto');
+      });
+    }
+  });
+</script>
+
+</body>
+</html>
