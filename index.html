@@ -66,10 +66,10 @@
   table.grid th, table.grid td { padding: 10px 8px; text-align: left; vertical-align: middle; border-bottom: 1px solid #f3f4f6; }
   table.grid thead th { background: #fafafa; font-weight: 600; font-size: 12px; color: #4b5563; border-bottom: 1px solid #e5e7eb; }
   table.grid thead th .req { color: #ef4444; margin-right: 2px; }
-  table.grid input { width: 100%; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; background: #fff; }
+  table.grid input, table.grid select { width: 100%; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 4px; font-size: 13px; background: #fff; }
   table.grid input:disabled { background: #f9fafb; color: #9ca3af; }
-  table.grid input.auto { background: #f9fafb; color: #4b5563; }
-  table.grid input.overridden { border-color: #f0853f; background: #fff7ed; }
+  table.grid .auto { background: #f9fafb; color: #4b5563; }
+  table.grid .overridden { border-color: #f0853f; background: #fff7ed; }
 
   .badge { display: inline-block; padding: 1px 7px; border-radius: 10px; font-size: 11px; font-weight: 500; margin-left: 4px; }
   .badge-hk { background: #fef3c7; color: #92400e; }
@@ -206,9 +206,10 @@
         <thead>
           <tr>
             <th style="width:32px;">#</th>
-            <th style="width:220px;"><span class="req">*</span> 标题</th>
-            <th style="width:160px;"><span class="req">*</span> 制度名称</th>
-            <th style="width:180px;"><span class="req">*</span> 摘要</th>
+            <th style="width:200px;"><span class="req">*</span> 标题</th>
+            <th style="width:150px;"><span class="req">*</span> 制度名称</th>
+            <th style="width:140px;"><span class="req">*</span> 制度分类 <span class="badge badge-auto">自动</span></th>
+            <th style="width:170px;"><span class="req">*</span> 摘要</th>
             <th style="width:130px;"><span class="req">*</span> 发文日期</th>
             <th style="width:130px;"><span class="req">*</span> 重检日期 <span class="badge badge-auto">自动</span></th>
             <th style="width:160px;" id="th-num"><span class="req">*</span> 制度序号</th>
@@ -220,6 +221,7 @@
             <td style="color:#9ca3af;">1</td>
             <td><input value="智能纪要：4 月 23 日 知识周例会" /></td>
             <td><input value="知识周例会纪要-20260423" /></td>
+            <td><select class="auto" title="从文件夹路径『/行政管理/会议纪要』自动推断"><option>行政管理</option><option>人力资源管理</option><option>财务管理</option><option>风险管理</option></select></td>
             <td><input placeholder="二期 AI 自动生成…" /></td>
             <td><input type="date" value="2026-04-23" /></td>
             <td><input type="date" value="2027-04-23" class="auto" title="自动 = 发文 + 1 年" /></td>
@@ -230,6 +232,7 @@
             <td style="color:#9ca3af;">2</td>
             <td><input value="2026 年 5 月 制度评审纪要" /></td>
             <td><input value="制度评审纪要-202605" /></td>
+            <td><select class="auto"><option>行政管理</option><option>人力资源管理</option><option>财务管理</option></select></td>
             <td><input value="本月制度评审会议要点…" /></td>
             <td><input type="date" value="2026-05-10" /></td>
             <td><input type="date" value="2027-05-10" class="auto" /></td>
@@ -240,6 +243,7 @@
             <td style="color:#9ca3af;">3</td>
             <td><input value="制度汇编系统培训手册" /></td>
             <td><input value="制度汇编培训手册" /></td>
+            <td><select class="overridden" title="原匹配为『行政管理』，已手动改为『人力资源管理』"><option>人力资源管理</option><option selected>人力资源管理</option><option>行政管理</option></select></td>
             <td><input value="新员工制度汇编系统使用培训…" /></td>
             <td><input type="date" value="2026-03-15" /></td>
             <td><input type="date" value="2028-03-15" class="overridden" title="手动改为 2 年周期" /></td>
